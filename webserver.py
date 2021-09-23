@@ -1,6 +1,8 @@
 import socket
 from threading import Thread
 from pathlib import Path
+from datetime import date, datetime
+import os
 
 class WebServer:
 
@@ -54,13 +56,15 @@ class HttpResponse:
         part = message.split(b" ")
         test = part[1].decode('utf-8')
         verSeExiste = Path(f"files/{test}")
+        today = datetime.now()
+        responseDate = today.strftime("%a, %d %b %Y %H:%M:%S %Z")
         try:
         # vendo se a pessoa pediu um arquivo...        
             if test == "/":
                     fileToRead=open('files/index.html','r')
                     s = fileToRead.read()
                     self.conn.sendall(
-                    f'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\nContent-Type: text/html\r\n\r\n{s}'.encode(
+                    f'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\nDate: {responseDate}\r\nAccept-Encoding: gzip\r\nAccept: */*\r\nContent-Type: text/html\r\n\r\n{s}'.encode(
                         'utf-8'))
             elif verSeExiste.is_file():
                 splitFileName = test.split(".")
@@ -69,53 +73,47 @@ class HttpResponse:
                         fileToRead=open(f'files/{test}','r')
                         s = fileToRead.read()
                         self.conn.sendall(
-                        f'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\nAccept-Encoding: gzip, deflate\r\nAccept: */*\r\nContent-Type: text/html\r\n\r\n{s}'.encode(
+                        f'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\nDate: {responseDate}\r\nAccept-Encoding: gzip\r\nAccept: */*\r\nContent-Type: text/html\r\n\r\n{s}'.encode(
                             'utf-8'))
                 elif fileExtension == "js":
                     fileToRead=open(f'files/{test}','r')
                     s = fileToRead.read()
                     self.conn.send(
-                     f'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\nAccept-Encoding: gzip, deflate\r\nAccept: */*\r\nContent-Type: text/javascript\r\n\r\n<html><meta charset="UTF-8"/><body><script src="{s}"></script></body></html>'.encode(
+                     f'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\nDate: {responseDate}\r\nAccept-Encoding: gzip\r\nAccept: */*\r\nContent-Type: text/javascript\r\n\r\n<html><meta charset="UTF-8"/><body><script src="{s}"></script></body></html>'.encode(
                          'utf-8'))
                     # self.conn.send(
                     # f'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\nContent-Type: text/javascript\r\n\r\n'.encode(
                     #     'utf-8'))
                 elif fileExtension == "jpg" or fileExtension == "jpeg":                
-                        f = open(f'files/{test}', 'rb').read()
+                        s = open(f'files/{test}', 'rb').read()
                         HTTP_RESPONSE = b'\r\n'.join([
                                 b"HTTP/1.0 200 OK",
                                 b"Connection: keep-alive",
-                                b"Accept-Encoding: gzip, deflate\r\nAccept: */*",
+                                b"Accept-Encoding: gzip\r\nAccept: */*",
                                 b"Content-Type: image/jpeg",
-                                b'', f 
+                                b'', s 
                                 ] )
                         self.conn.sendall(HTTP_RESPONSE) 
                 elif fileExtension == "png":
-                        f = open(f'files/{test}', 'rb').read()
+                        s = open(f'files/{test}', 'rb').read()
                         HTTP_RESPONSE = b'\r\n'.join([
                                 b"HTTP/1.0 200 OK",
                                 b"Connection: keep-alive",
-                                b"Accept-Encoding: gzip, deflate\r\nAccept: */*",
+                                b"Accept-Encoding: gzip\r\nAccept: */*",
                                 b"Content-Type: image/png",
-                                b'', f 
+                                b'', s 
                                 ] )
-                        self.conn.sendall(HTTP_RESPONSE) 
-                elif fileExtension == "ico":              
-                        fileToRead=open(f'{test}','r')
-                        s = fileToRead.read()
-                        self.conn.sendall(
-                        f'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\n\r\n{s}'.encode(
-                            'utf-8'))
+                        self.conn.sendall(HTTP_RESPONSE)                 
             else:
                 fileToRead=open('files/error.html','r')
                 s = fileToRead.read()
                 self.conn.sendall(
-                f'HTTP/1.0 404 Not Found\r\nConnection: keep-alive\r\nContent-Type: text/html\r\n\r\n{s}'.encode(
+                f'HTTP/1.0 404 Not Found\r\nConnection: close\r\nDate: {responseDate}\r\nAccept-Encoding: x-gzip\r\nAccept: */*\r\nContent-Type: text/html\r\n\r\n{s}'.encode(
                     'utf-8'))
         except:
             print("Unknown error")
             self.conn.sendall(
-                f'HTTP/1.0 404 Not Found\r\nConnection: keep-alive\r\nContent-Type: text/html\r\n\r\n<html><p>Unknown error</p></html>'.encode(
+                f'HTTP/1.0 404 Not Found\r\nConnection: close\r\nDate: {responseDate}\r\nAccept-Encoding: x-gzip\r\nAccept: */*\r\nContent-Type: text/html\r\n\r\n<html><p>Unknown error</p></html>'.encode(
                     'utf-8'))
         # jpg/png
         # js 
