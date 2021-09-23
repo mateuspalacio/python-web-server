@@ -79,7 +79,7 @@ class HttpResponse:
                     fileToRead=open(f'files/{test}','r')
                     s = fileToRead.read()
                     self.conn.send(
-                     f'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\nDate: {responseDate}\r\nAccept-Encoding: gzip\r\nAccept: */*\r\nContent-Type: text/javascript\r\n\r\n<html><meta charset="UTF-8"/><body><script src="{s}"></script></body></html>'.encode(
+                     f'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\nDate: {responseDate}\r\nAccept-Encoding: gzip\r\nAccept: */*\r\nContent-Type: text/html\r\n\r\n<script>{s}</script>'.encode(
                          'utf-8'))
                     # self.conn.send(
                     # f'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\nContent-Type: text/javascript\r\n\r\n'.encode(
